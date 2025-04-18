@@ -1,0 +1,96 @@
+#include <iostream>
+#include <vector>
+#include <limits>
+
+#define DEFAULT std::numeric_limits<int>::min()
+
+struct SegmentTreeNode {
+    int value;
+    int index;
+};
+
+int closest_power2(int a) {
+    --a;
+    a |= a >> 1;
+    a |= a >> 2;
+    a |= a >> 4;
+    a |= a >> 8;
+    a |= a >> 16;
+    ++a;
+
+    return a;
+}
+
+void build_tree(std::vector<SegmentTreeNode>& tree, int n) {
+    size_t i = tree.size() / 2;
+    size_t count = i + static_cast<size_t>(n);
+    size_t index = 1;
+
+    tree[0].value = DEFAULT;
+    tree[0].index = 0;
+
+    while (i < count) {
+        std::cin >> tree[i].value;
+        tree[i].index = index;
+        ++i;
+        ++index;
+    }
+
+    while (i < tree.size()) {
+        tree[i].value = DEFAULT;
+        tree[i].index = index;
+        ++i;
+        ++index;
+    }
+
+    for (size_t j = tree.size() / 2 - 1; j > 0; --j) {
+        SegmentTreeNode& parent = tree[j];
+        SegmentTreeNode& left = tree[2 * j];
+        SegmentTreeNode& right = tree[2 * j + 1];
+
+        if (left.value > right.value) {
+            parent = left;
+        } else {
+            parent = right;
+        }
+    }
+}
+
+SegmentTreeNode& max_node(SegmentTreeNode& node1, SegmentTreeNode& node2) {
+    if (node1.value > node2.value) {
+        return node1;
+    } else {
+        return node2;
+    }
+}
+
+SegmentTreeNode& get_max(std::vector<SegmentTreeNode>& tree, size_t i, int low, int high, int l, int r) {
+    if (l <= low && r >= high) {
+        return tree[i];
+    } else if (r < low || l > high) {
+        return tree[0];
+    } else {
+        SegmentTreeNode& left = get_max(tree, i * 2, low, (low + high) / 2, l, r);
+        SegmentTreeNode& right = get_max(tree, i * 2 + 1, (low + high) / 2 + 1, high, l, r);
+        return max_node(left, right);
+    }
+}
+
+int main() {
+    int n;
+    std::cin >> n;
+    int tree_size = closest_power2(n);
+    std::vector<SegmentTreeNode> segment_tree(tree_size * 2);
+    build_tree(segment_tree, n);
+
+    int k;
+    std::cin >> k;
+    while (k--) {
+        int l, r;
+        std::cin >> l >> r;
+        SegmentTreeNode& node = get_max(segment_tree, 1, 1, tree_size, l, r);
+        std::cout << node.value << ' ' << node.index << '\n';
+    }
+
+    return 0;
+}
