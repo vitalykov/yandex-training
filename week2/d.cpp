@@ -9,7 +9,7 @@ struct SegmentTreeNode {
     int index;
 };
 
-int closest_power2(int a) {
+int ClosestPower2(int a) {
     --a;
     a |= a >> 1;
     a |= a >> 2;
@@ -21,7 +21,7 @@ int closest_power2(int a) {
     return a;
 }
 
-void build_tree(std::vector<SegmentTreeNode>& tree, int n) {
+void BuildTree(std::vector<SegmentTreeNode>& tree, int n) {
     size_t i = tree.size() / 2;
     size_t count = i + static_cast<size_t>(n);
     size_t index = 1;
@@ -56,7 +56,7 @@ void build_tree(std::vector<SegmentTreeNode>& tree, int n) {
     }
 }
 
-SegmentTreeNode& max_node(SegmentTreeNode& node1, SegmentTreeNode& node2) {
+SegmentTreeNode& MaxNode(SegmentTreeNode& node1, SegmentTreeNode& node2) {
     if (node1.value > node2.value) {
         return node1;
     } else {
@@ -64,25 +64,25 @@ SegmentTreeNode& max_node(SegmentTreeNode& node1, SegmentTreeNode& node2) {
     }
 }
 
-SegmentTreeNode& get_max(std::vector<SegmentTreeNode>& tree, size_t i, int low, int high, int l, int r) {
+SegmentTreeNode& GetMax(std::vector<SegmentTreeNode>& tree, size_t i, int low, int high, int l, int r) {
     if (l <= low && r >= high) {
         return tree[i];
     } else if (r < low || l > high) {
         return tree[0];
     } else {
-        SegmentTreeNode& left = get_max(tree, i * 2, low, (low + high) / 2, l, r);
-        SegmentTreeNode& right = get_max(tree, i * 2 + 1, (low + high) / 2 + 1, high, l, r);
-        return max_node(left, right);
+        SegmentTreeNode& left = GetMax(tree, i * 2, low, (low + high) / 2, l, r);
+        SegmentTreeNode& right = GetMax(tree, i * 2 + 1, (low + high) / 2 + 1, high, l, r);
+        return MaxNode(left, right);
     }
 }
 
-void update_tree(std::vector<SegmentTreeNode>& tree, size_t i, int value) {
+void UpdateTree(std::vector<SegmentTreeNode>& tree, size_t i, int value) {
     i += tree.size() / 2 - 1;
     tree[i].value = value;
     i /= 2;
 
     while (i > 0) {
-        tree[i] = max_node(tree[2 * i], tree[2 * i + 1]);
+        tree[i] = MaxNode(tree[2 * i], tree[2 * i + 1]);
         i /= 2;
     }
 }
@@ -90,9 +90,9 @@ void update_tree(std::vector<SegmentTreeNode>& tree, size_t i, int value) {
 int main() {
     int n;
     std::cin >> n;
-    int tree_size = closest_power2(n);
+    int tree_size = ClosestPower2(n);
     std::vector<SegmentTreeNode> segment_tree(tree_size * 2);
-    build_tree(segment_tree, n);
+    BuildTree(segment_tree, n);
 
     int k;
     std::cin >> k;
@@ -103,13 +103,13 @@ int main() {
         if (command == 's') {
             int l, r;
             std::cin >> l >> r;
-            SegmentTreeNode& node = get_max(segment_tree, 1, 1, tree_size, l, r);
+            SegmentTreeNode& node = GetMax(segment_tree, 1, 1, tree_size, l, r);
             std::cout << node.value << ' ';
         } else if (command == 'u') {
             size_t index;
             int value;
             std::cin >> index >> value;
-            update_tree(segment_tree, index, value);
+            UpdateTree(segment_tree, index, value);
         }
     }
     // std::cout << '\n';
